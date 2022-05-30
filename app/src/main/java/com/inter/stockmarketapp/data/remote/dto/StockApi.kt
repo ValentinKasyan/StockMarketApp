@@ -8,7 +8,7 @@ interface StockApi {
     //to download CSV file
     @GET("query?function=LISTING_STATUS")
     suspend fun getListings(
-        @retrofit2.http.Query("apiKey") apiKey: String
+        @retrofit2.http.Query("apiKey") apiKey: String = API_KEY
     ): ResponseBody
 
     companion object {
