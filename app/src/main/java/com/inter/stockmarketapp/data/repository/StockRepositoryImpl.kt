@@ -1,7 +1,9 @@
 package com.inter.stockmarketapp.data.repository
 
+import com.inter.stockmarketapp.data.csv.CSVParser
 import com.inter.stockmarketapp.data.local.StockDatabase
 import com.inter.stockmarketapp.data.mapper.toCompanyListing
+import com.inter.stockmarketapp.data.mapper.toCompanyListingEntity
 import com.inter.stockmarketapp.data.remote.dto.StockApi
 import com.inter.stockmarketapp.domain.model.CompanyListing
 import com.inter.stockmarketapp.domain.repository.StockRepository
@@ -16,7 +18,8 @@ import javax.inject.Singleton
 @Singleton
 class StockRepositoryImpl @Inject constructor(
     val api: StockApi,
-    val db: StockDatabase
+    val db: StockDatabase,
+    val companyListingsParser: CSVParser<CompanyListing>
 ) : StockRepository {
 
     private val dao = db.dao
@@ -42,14 +45,30 @@ class StockRepositoryImpl @Inject constructor(
             val remoteListings = try {
                 val response = api.getListings()
                 //to read csv file use byteStream
-                response.byteStream()
+                companyListingsParser.parse(response.byteStream())
             } catch (e: IOException) {
                 e.printStackTrace()
                 emit(Resource.Error("Couldn't load data"))
-
+                null
             } catch (e: HttpException) {
                 e.printStackTrace()
                 emit(Resource.Error("Couldn't load data,invalid response"))
+                null
+            }
+
+            //after we finish api call, we put data in local cash
+            remoteListings?.let { listings ->
+                dao.clearCompanyListing()
+                dao.insertCompanyListings(
+                    listings.map {
+                        it.toCompanyListingEntity()
+                    }
+                )
+                emit(
+                    Resource.Success(
+                        data = dao.searchCompanyListing("").map { it.toCompanyListing() })
+                )
+                emit(Resource.Loading(false))
             }
         }
     }
