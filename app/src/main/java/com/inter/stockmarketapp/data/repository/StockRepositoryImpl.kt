@@ -51,8 +51,6 @@ class StockRepositoryImpl @Inject constructor(
                 e.printStackTrace()
                 emit(Resource.Error("Couldn't load data,invalid response"))
             }
-
-
         }
     }
 
