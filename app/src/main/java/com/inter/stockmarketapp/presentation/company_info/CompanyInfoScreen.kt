@@ -2,9 +2,12 @@ package com.inter.stockmarketapp.presentation.company_info
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontStyle
@@ -79,7 +82,7 @@ fun CompanyInfoScree(
                     Text(
                         text = "Market Summary"
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(32.dp))
                     StockChart(
                         infos = state.stockInfos,
                         modifier = Modifier
@@ -91,6 +94,14 @@ fun CompanyInfoScree(
             }
         }
     }
-
+    Box(modifier = Modifier.fillMaxSize(),
+        contentAlignment = Center
+    ){
+        if(state.isLoading){
+            CircularProgressIndicator()
+        }else if (state.error!=null){
+            Text(text = state.error, color = MaterialTheme.colors.error)
+        }
+    }
 
 }
